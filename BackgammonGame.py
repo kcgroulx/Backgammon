@@ -12,11 +12,11 @@ RED = (255,0,0)
 YELLOW = (255,255,0)
 BOARD_COLOR = (3, 52, 133)
 
-#Display
-WIDTH, HEIGHT = 1300, 800
-
 #Bar
 BAR_WIDTH = 100
+
+#Display
+WIDTH, HEIGHT = 14 * BAR_WIDTH, 800
 
 #Triangle
 TRIANGLE_WIDTH = 35
@@ -31,21 +31,21 @@ PIECE_COLOR_WHITE = (220, 220, 220)
 
 #Roll Dice Button
 ROLL_DICE_BUTTON_WIDTH = int(BAR_WIDTH)
-rollDiceButton = pygame.Rect((WIDTH-BAR_WIDTH)/2, HEIGHT-100, ROLL_DICE_BUTTON_WIDTH, 50)
+rollDiceButton = pygame.Rect(7*BAR_WIDTH, HEIGHT-100, ROLL_DICE_BUTTON_WIDTH, 50)
 
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption('Backgammon')
 
 def SpaceToPixel(space:int):
-    space_size = QUADRENT_WIDTH / 6
+    space_size = BAR_WIDTH
     if space < 6 and space >= 0:
-        return (space_size*(space + 0.5), 0)
+        return (BAR_WIDTH*(1.5 + space), 0)
     elif space < 12:
-        return (QUADRENT_WIDTH+BAR_WIDTH + space_size*(space-5.5), 0)
+        return (BAR_WIDTH*(2.5 + space), 0)
     elif space < 18:
-        return (QUADRENT_WIDTH+BAR_WIDTH + space_size*(17.5-space), HEIGHT)
+        return (BAR_WIDTH*(25.5 - space), HEIGHT)
     elif space < 24:
-        return (space_size*(23.5-space), HEIGHT)
+        return (BAR_WIDTH*(24.5 - space), HEIGHT)
     else:
         raise ValueError("Invalid space value")
 
@@ -79,7 +79,7 @@ def DrawPieces(board:pg.Board):
 
 
 def DrawBar():
-    square_rect = pygame.Rect((WIDTH-BAR_WIDTH)/2, 0, BAR_WIDTH, HEIGHT)
+    square_rect = pygame.Rect(7 * BAR_WIDTH, 0, BAR_WIDTH, HEIGHT)
     pygame.draw.rect(screen, BLACK, square_rect)
 
 def DrawHomes():
@@ -90,6 +90,7 @@ def DrawBoard(board:pg.Board):
     screen.fill(BOARD_COLOR)
     DrawTriangles()
     DrawBar()
+    DrawHomes()
     DrawPieces(board)
     DrawRollDiceButton()
     pygame.display.flip()
@@ -103,15 +104,22 @@ def IsButtonPressed(pos, button):
 
 def PixelToSpace(pos):
     x, y = pos
-    if x < QUADRENT_WIDTH:
-        if y < HEIGHT/2:
+
+    if y < HEIGHT /2:
+        if x > BAR_WIDTH:
+
+
+    if x > BAR_WIDTH and x < BAR_WIDTH * 7:
+        if y < HEIGHT / 2:
             return int(x/(QUADRENT_WIDTH/6))
-        elif y > HEIGHT/2:
+        elif y > HEIGHT / 2:
             return 23 - int(x/(QUADRENT_WIDTH/6))
-    elif x > QUADRENT_WIDTH + BAR_WIDTH:
-        if y < HEIGHT/2:
+        
+    
+    elif x > BAR_WIDTH * 8:
+        if y < HEIGHT / 2:
             return 6 + int((x-QUADRENT_WIDTH-BAR_WIDTH)/(QUADRENT_WIDTH/6))
-        elif y > HEIGHT/2:
+        elif y > HEIGHT / 2:
             return 17 - int((x-QUADRENT_WIDTH-BAR_WIDTH)/(QUADRENT_WIDTH/6))
     return -1
 
