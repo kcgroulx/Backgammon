@@ -37,46 +37,44 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption('Backgammon')
 
 def SpaceToPixel(space:int):
-    space_size = BAR_WIDTH
-    if space < 6 and space >= 0:
+    if space >= 1 and space < 7:
+        return (BAR_WIDTH*(0.5 + space), 0)
+    elif space < 13:
         return (BAR_WIDTH*(1.5 + space), 0)
-    elif space < 12:
-        return (BAR_WIDTH*(2.5 + space), 0)
-    elif space < 18:
+    elif space < 19:
+        return (BAR_WIDTH*(26.5 - space), HEIGHT)
+    elif space < 25:
         return (BAR_WIDTH*(25.5 - space), HEIGHT)
-    elif space < 24:
-        return (BAR_WIDTH*(24.5 - space), HEIGHT)
     else:
         raise ValueError("Invalid space value")
 
 def DrawTriangles():
-    for i in range(24):
+    for i in range(1, 25):
         x,y = SpaceToPixel(i)
-        vertices = [(x - TRIANGLE_WIDTH, y),(x + TRIANGLE_WIDTH, y), (x, TRIANGLE_HEIGHT if i < 12 else HEIGHT-TRIANGLE_HEIGHT)]
+        vertices = [(x-TRIANGLE_WIDTH, y),(x+TRIANGLE_WIDTH, y), (x, TRIANGLE_HEIGHT if i < 13 else HEIGHT-TRIANGLE_HEIGHT)]
         color = WHITE if i % 2 == 0 else BLACK
         pygame.draw.polygon(screen, color, vertices)
-
 
 def DrawPieces(board:pg.Board):
     for i in range(pg.NUM_OF_SPACES):
         space = board.boardData[i]
-        x,y = SpaceToPixel(i)
-        if(space.color != pg.PLAYER_EMPTY):
-            for j in range(space.numOfPieces):
-                if i < 12:
-                    pos = (x, y + j*( 2 * PIECE_SIZE + PIECE_SPACING) + PIECE_SIZE)
-                else:
-                    pos = (x, y - j*( 2 * PIECE_SIZE + PIECE_SPACING) - PIECE_SIZE)
-                color = PIECE_COLOR_WHITE if space.color == pg.PLAYER_WHITE else PIECE_COLOR_BLACK
-                pygame.draw.circle(screen, color, pos, PIECE_SIZE)
+        if i != 0 and i != 25:
+            x,y = SpaceToPixel(i)
+            if(space.color != pg.PLAYER_EMPTY):
+                for j in range(space.numOfPieces):
+                    if i < 13:
+                        pos = (x, y + j*( 2 * PIECE_SIZE + PIECE_SPACING) + PIECE_SIZE)
+                    else:
+                        pos = (x, y - j*( 2 * PIECE_SIZE + PIECE_SPACING) - PIECE_SIZE)
+                    color = PIECE_COLOR_WHITE if space.color == pg.PLAYER_WHITE else PIECE_COLOR_BLACK
+                    pygame.draw.circle(screen, color, pos, PIECE_SIZE)
 
         if i in board.legalMoves:
-            if i < 12:
+            if i < 13:
                 pos = (x, y + space.numOfPieces*( 2 * PIECE_SIZE + PIECE_SPACING) + PIECE_SIZE)
             else:
                 pos = (x, y - space.numOfPieces*( 2 * PIECE_SIZE + PIECE_SPACING) - PIECE_SIZE)
             pygame.draw.circle(screen, YELLOW, pos, PIECE_SIZE)  
-
 
 def DrawBar():
     square_rect = pygame.Rect(7 * BAR_WIDTH, 0, BAR_WIDTH, HEIGHT)
@@ -104,33 +102,23 @@ def IsButtonPressed(pos, button):
 
 def PixelToSpace(pos):
     x, y = pos
-
-    if y < HEIGHT /2:
-        if x > BAR_WIDTH:
-
-
-    if x > BAR_WIDTH and x < BAR_WIDTH * 7:
-        if y < HEIGHT / 2:
-            return int(x/(QUADRENT_WIDTH/6))
-        elif y > HEIGHT / 2:
-            return 23 - int(x/(QUADRENT_WIDTH/6))
-        
-    
-    elif x > BAR_WIDTH * 8:
-        if y < HEIGHT / 2:
-            return 6 + int((x-QUADRENT_WIDTH-BAR_WIDTH)/(QUADRENT_WIDTH/6))
-        elif y > HEIGHT / 2:
-            return 17 - int((x-QUADRENT_WIDTH-BAR_WIDTH)/(QUADRENT_WIDTH/6))
+    if y < HEIGHT / 2:
+        if x > 0 and x < BAR_WIDTH * 7:
+            return int(x/BAR_WIDTH)
+        elif x > BAR_WIDTH * 8 and x < WIDTH: 
+            return int((x/BAR_WIDTH) - 1)
+    elif y > HEIGHT / 2:
+        if x < WIDTH and x > BAR_WIDTH * 8: 
+            return int(27 - (x/BAR_WIDTH))
+        elif x < BAR_WIDTH * 7 and x > 0:
+            return int(26 - (x/BAR_WIDTH))
     return -1
 
 def main():
     clock = pygame.time.Clock()
     running = True
-
     board = pg.Board()
-
     board.SetBoard()
-
 
     while running:
         for event in pygame.event.get():
@@ -146,12 +134,10 @@ def main():
                     if spacePressed in board.legalMoves:
                         index = board.legalMoves.index(spacePressed)
                         board.MakeMove(index)
-                        print("Move Made")
-                    board.SelectSpace(spacePressed)
-                    print(board.legalMoves)
+                    else:
+                        board.SelectSpace(spacePressed)
                 
         DrawBoard(board)
-        
         clock.tick(60)
     
     pygame.quit()
